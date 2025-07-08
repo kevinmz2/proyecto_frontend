@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,6 +10,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  //para capturar el usuario y contraseña
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool loading = false;
@@ -22,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final respuesta = await ApiService.login(username, password);
 
-      // Aquí ya tienes el mapa con los tokens
+      // el mapa con los tokens para poder acceder
       final accessToken = respuesta['access'];
       final refreshToken = respuesta['refresh'];
 
@@ -32,8 +34,14 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(content: Text('Login exitoso')),
       );
 
-      // Aquí puedes navegar a la pantalla principal o guardar los tokens
-      // Por ejemplo:
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(username: username),
+        ),
+      );
+      // para poder navegar a la pantalla principal o guardar los token
+      // Por ejemplo
       // Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
       setState(() => loading = false);
