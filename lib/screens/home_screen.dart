@@ -12,9 +12,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, String>> notas = [
-    {"titulo": "Primer recordatorio", "contenido": "No olvidar la reunión del lunes"},
-    {"titulo": "Compra semanal", "contenido": "Leche, pan, frutas"},
-    {"titulo": "Estudiar Flutter", "contenido": "Completar el proyecto de login"},
+    {"titulo": "primer recordatorio", "contenido": "mañana no hay clases"},
+    {"titulo": "segundo recordatorio", "contenido": "viajar en moto"},
+    {"titulo": "tercer recor", "contenido": "Completar el proyecto de login, backend"},
   ];
 
   @override
