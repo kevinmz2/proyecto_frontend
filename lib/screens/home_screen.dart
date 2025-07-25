@@ -1,88 +1,65 @@
-// pantala de bienvenida al usuarioo
-
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import 'crear_nota_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  final String username;
-  const HomeScreen({super.key, required this.username});
+  final String accessToken;
+  const HomeScreen({super.key, required this.accessToken});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Map<String, String>> notas = [
-    {"titulo": "primer recordatorio", "contenido": "mañana no hay clases"},
-    {"titulo": "segundo recordatorio", "contenido": "viajar en moto"},
-    {"titulo": "tercer recor", "contenido": "Completar el proyecto de login, backend"},
-  ];
+  late Future<List<Map<String, dynamic>>> _notasFuture;
+  final ApiService _apiService = ApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    _notasFuture = _apiService.getNotas(widget.accessToken); // corregido: widget con minúscula
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: Text('Bienvenido, ${widget.username}'),
-        backgroundColor: Colors.deepPurple,
-        centerTitle: true,
-        elevation: 4,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Tus notas importantes',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: ListView.builder(
-                itemCount: notas.length,
-                itemBuilder: (context, index) {
-                  final nota = notas[index];
-                  return Card(
-                    elevation: 3,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      title: Text(
-                        nota['titulo'] ?? '',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                        ),
-                      ),
-                      subtitle: Text(
-                        nota['contenido'] ?? '',
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                      leading: const Icon(Icons.note, color: Colors.deepPurple),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 18),
-                      onTap: () {
-                        // Aquí puedes agregar navegación para ver detalle de nota
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+      appBar: AppBar(title: const Text('Mis Notas')),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _notasFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No hay notas'));
+          }
+
+          final notas = snapshot.data!;
+          return ListView.builder(
+            itemCount: notas.length,
+            itemBuilder: (context, index) {
+              final nota = notas[index];
+              return Card(
+                child: ListTile(
+                  title: Text(nota['titulo'] ?? 'Sin título'),
+                  subtitle: Text(nota['contenido'] ?? ''),
+                  trailing: Text(nota['fecha']?.split('T')[0] ?? ''),
+                ),
+              );
+            },
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Aquí agregar navegación para crear nueva nota
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CrearNotaScreen(accessToken: widget.accessToken),
+            ),
+          );
         },
-        backgroundColor: Colors.deepPurple,
         child: const Icon(Icons.add),
       ),
     );

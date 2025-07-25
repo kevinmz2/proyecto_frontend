@@ -1,21 +1,29 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../config.dart'; 
+import '../config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static Future<Map<String, dynamic>> login(String username, String password) async {
-    final url = Uri.parse('$baseUrl/api/auth/login/');
+  final String baseUrl = url; // Usa la constante desde config.dart
 
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'username': username, 'password': password}),
+  // Método para obtener las notas del backend
+  Future<List<Map<String, dynamic>>> getNotas() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('access'); // Token guardado tras login
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/notas/'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((e) => e as Map<String, dynamic>).toList();
     } else {
-      throw Exception('Credenciales inválidas');
+      throw Exception('Error al obtener notas: ${response.statusCode}');
     }
   }
 }
